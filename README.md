@@ -17,7 +17,7 @@ Game N: AI players have dozens of games' experience, tighter speech logic,
         sharper voting, stealthier wolf plays, deeper good-faction reasoning
 ```
 
-The knowledge base supports **partitioned storage and strategy retirement** — outdated strategies get marked as retired in new games, preventing unbounded growth. Human players don't face fixed-strategy AI, but an **opponent collective that continuously evolves with accumulated game experience**.
+Human players don't face fixed-strategy AI, but an **opponent collective that continuously evolves with accumulated game experience**.
 
 ### Other Features
 
