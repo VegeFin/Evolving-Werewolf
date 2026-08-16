@@ -1,9 +1,0 @@
-{
-  "apiKey": "在此填入你的智谱APIKey",
-  "baseURL": "https://open.bigmodel.cn/api/paas/v4",
-  "visionModel": "glm-4v-flash",
-  "drawModel": "cogview-3-flash",
-  "drawSize": "1024x1024",
-  "assetDir": "ui/assets",
-  "_说明": "复制本文件为 image-config.json 并填入 apiKey。在 https://open.bigmodel.cn 注册获取。读图用 visionModel（glm-4v-flash 免费），生图用 drawModel（cogview-3-flash 免费）。assetDir 可填绝对路径或相对插件根目录的路径。改配置无需重启，工具调用时即时生效。"
-}
