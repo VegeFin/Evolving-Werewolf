@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>狼人杀 UI 原型 2 · 明亮桌游风</title>
+<style>
+  :root {
+    --bg: #f3ecdc;
+    --panel: #fffdf6;
+    --wood: #d9c9a8;
+    --ink: #3a3226;
+    --muted: #8a7f6a;
+    --wolf: #c0392b;
+    --god: #2e6fd8;
+    --vill: #27854b;
+    --gold: #b8860b;
+    --shadow: 0 3px 0 rgba(58,50,38,0.15);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: linear-gradient(180deg, #efe6d2, #e2d4b4); font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; color: var(--ink); display: flex; justify-content: center; padding: 24px; }
+  .panel { width: 480px; background: var(--panel); border: 3px solid var(--ink); border-radius: 20px; padding: 16px; box-shadow: 0 6px 0 rgba(58,50,38,0.25); }
+
+  .head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+  .head .logo { font-size: 20px; }
+  .badge { padding: 3px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; border: 2px solid var(--ink); background: #fff; box-shadow: var(--shadow); }
+  .badge.day { background: #fff3c4; }
+  .badge.turn { background: #ffd8a8; color: #9a5b00; }
+  .head .spacer { flex: 1; }
+  .icon-btn { background: #fff; border: 2px solid var(--ink); border-radius: 6px; padding: 2px 8px; font-size: 12px; cursor: pointer; box-shadow: var(--shadow); }
+
+  .seats { display: grid; grid-template-columns: repeat(9, 1fr); gap: 6px; margin-bottom: 14px; }
+  .seat { background: #fff; border: 2px solid var(--ink); border-radius: 12px; padding: 7px 2px; text-align: center; box-shadow: var(--shadow); position: relative; }
+  .seat .emoji { font-size: 19px; }
+  .seat .num { font-size: 10px; font-weight: 800; }
+  .seat .role { font-size: 9px; font-weight: 700; }
+  .seat.wolf { background: #fdecea; border-color: var(--wolf); }
+  .seat.wolf .role { color: var(--wolf); }
+  .seat.god { background: #eef4fe; border-color: var(--god); }
+  .seat.god .role { color: var(--god); }
+  .seat.vill { background: #ecf7f0; border-color: var(--vill); }
+  .seat.vill .role { color: var(--vill); }
+  .seat.dead { opacity: 0.4; filter: grayscale(1); }
+  .seat.dead::after { content: "✕"; position: absolute; top: 2px; right: 6px; color: var(--wolf); font-weight: 900; font-size: 12px; }
+  .seat.turn { outline: 3px solid #f0b429; }
+  .seat.you { border-style: dashed; border-width: 3px; }
+
+  .tabs { display: flex; gap: 8px; margin-bottom: 10px; }
+  .tab { flex: 1; text-align: center; padding: 7px; border-radius: 10px; border: 2px solid var(--ink); background: #fff; font-size: 13px; font-weight: 800; cursor: pointer; box-shadow: var(--shadow); }
+  .tab.on { background: var(--ink); color: #fff; box-shadow: none; transform: translateY(2px); }
+
+  .list { max-height: 210px; overflow: auto; display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .msg { display: flex; gap: 8px; padding: 7px 9px; border-radius: 10px; border: 2px solid #e5dcc4; background: #fff; }
+  .msg .tag { flex: none; min-width: 34px; text-align: center; font-weight: 900; font-size: 12px; padding: 2px 7px; border-radius: 8px; background: #eef4fe; color: var(--god); align-self: flex-start; }
+  .msg.wolf .tag { background: #fdecea; color: var(--wolf); }
+  .msg .txt { font-size: 12px; line-height: 1.55; }
+
+  .human { border-top: 3px dashed var(--wood); padding-top: 12px; }
+  .human-head { display: flex; align-items: center; gap: 8px; font-weight: 900; font-size: 14px; margin-bottom: 8px; }
+  .human-head .pill { font-size: 11px; padding: 2px 10px; border-radius: 20px; background: #eef4fe; color: var(--god); border: 2px solid var(--god); font-weight: 800; }
+  .pick { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
+  .pick .p { min-width: 36px; padding: 8px 0; border-radius: 10px; border: 2px solid var(--ink); background: #fff; font-weight: 900; cursor: pointer; box-shadow: var(--shadow); font-size: 13px; }
+  .pick .p.on { background: #d9f0e2; border-color: var(--vill); color: var(--vill); box-shadow: none; transform: translateY(2px); }
+  .input { width: 100%; min-height: 56px; border-radius: 12px; border: 2px solid var(--ink); background: #fff; padding: 9px; font-size: 13px; resize: vertical; margin-bottom: 9px; font-family: inherit; }
+  .go-row { display: flex; gap: 9px; }
+  .go { flex: 1; padding: 12px; border-radius: 12px; border: 2px solid var(--ink); font-size: 15px; font-weight: 900; cursor: pointer; background: #fff; box-shadow: var(--shadow); font-family: inherit; }
+  .go.primary { background: var(--gold); color: #fff; }
+  .go.danger { background: var(--wolf); color: #fff; }
+</style>
+</head>
+<body>
+<div class="panel">
+  <div class="head">
+    <span class="logo">🐺</span>
+    <span class="badge day">☀️ 第2天</span>
+    <span class="badge">白天 · 自由发言</span>
+    <span class="badge">存活 7</span>
+    <span class="badge turn">🎯 轮到你！</span>
+    <span class="spacer"></span>
+    <span class="icon-btn">👁身份</span>
+    <span class="icon-btn">收起</span>
+  </div>
+
+  <div class="seats">
+    <div class="seat god you"><div class="emoji">🔮</div><div class="num">1你</div><div class="role">预言家</div></div>
+    <div class="seat wolf"><div class="emoji">🐺</div><div class="num">2</div><div class="role">狼人</div></div>
+    <div class="seat vill"><div class="emoji">👤</div><div class="num">3</div><div class="role">平民</div></div>
+    <div class="seat vill dead"><div class="emoji">👤</div><div class="num">4</div><div class="role">平民</div></div>
+    <div class="seat god turn"><div class="emoji">💊</div><div class="num">5</div><div class="role">女巫</div></div>
+    <div class="seat god"><div class="emoji">🏹</div><div class="num">6</div><div class="role">猎人</div></div>
+    <div class="seat wolf"><div class="emoji">🐺</div><div class="num">7</div><div class="role">狼人</div></div>
+    <div class="seat vill dead"><div class="emoji">👤</div><div class="num">8</div><div class="role">平民</div></div>
+    <div class="seat wolf"><div class="emoji">🐺</div><div class="num">9</div><div class="role">狼人</div></div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab on">💬 发言</div>
+    <div class="tab">📰 事件</div>
+    <div class="tab">🗳 投票</div>
+  </div>
+
+  <div class="list">
+    <div class="msg wolf"><span class="tag">#2</span><span class="txt">归票 1 号！他是悍跳狼，昨天查杀已坐实。</span></div>
+    <div class="msg"><span class="tag">#3</span><span class="txt">我支持 2 号，1 号发言太急。</span></div>
+    <div class="msg"><span class="tag">#5</span><span class="txt">我是女巫，昨晚刀口是 1 号我救了他，狼刀自己人概率极低，站边 1 号。</span></div>
+    <div class="msg wolf"><span class="tag">#7</span><span class="txt">5 号你跳女巫？那 1 号更可疑了。</span></div>
+    <div class="msg"><span class="tag">#6</span><span class="txt">猎人压场，今天必须从 1/2 里出，我听完 1 号归票再投。</span></div>
+  </div>
+
+  <div class="human">
+    <div class="human-head">🧑 你 = 座位 1 · 预言家 <span class="pill">查验: #4 狼</span></div>
+    <div class="pick">
+      <span class="p">弃</span><span class="p">2</span><span class="p">3</span><span class="p on">4</span><span class="p">5</span><span class="p">6</span><span class="p">7</span><span class="p">8</span><span class="p">9</span>
+    </div>
+    <textarea class="input" placeholder="输入你的发言…">女巫都站我了，今天出 2 号悍跳狼，警徽在他手里一天都不能多留。</textarea>
+    <div class="go-row">
+      <button class="go primary">💬 发言</button>
+      <button class="go">📨 消息(3)</button>
+    </div>
+  </div>
+</div>
+</body>
+</html>

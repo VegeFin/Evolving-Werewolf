@@ -1,4 +1,4 @@
-# Werewolf Engine — 狼人杀多 Agent 游戏引擎
+# Evolving-Werewolf — 进化型狼人杀
 
 9 人局狼人杀（3 狼人 / 1 预言家 / 1 女巫 / 1 猎人 / 3 平民）的多 Agent 游戏引擎，运行在 **DeepSeek Harness (DSH)** 上。引擎自动主持整局游戏：身份分配、昼夜循环、警长竞选、发言投票、角色技能、胜负判定、快照复盘与跨局知识库。所有玩家均为 DSH 可继续子代理（continuable subagent），各自拥有独立 persona，通过工具行动。支持 1 个人类玩家通过浏览器面板参与。
 
@@ -33,14 +33,14 @@
 
 ```bash
 # 1. 克隆仓库
-git clone https://github.com/VegeFin/werewolf-engine.git
-cd werewolf-engine
+git clone https://github.com/VegeFin/Evolving-Werewolf.git
+cd Evolving-Werewolf
 
 # 2. 安装依赖（插件运行时依赖 @deepseek-ai/dsh-tools）
 pnpm install   # 或 npm install
 
 # 3. 安装到 DSH web profile
-dsh plugin --profile web add ./werewolf-engine
+dsh plugin --profile web add ./
 
 # 4. 重启 DSH
 dsh web
@@ -132,7 +132,7 @@ cp knowledge.example.json knowledge.json
 ## 目录结构
 
 ```
-werewolf-engine/
+Evolving-Werewolf/
 ├── lib/
 │   └── index.js              # 固化版引擎主文件（v33，纯 host）
 ├── ui/
