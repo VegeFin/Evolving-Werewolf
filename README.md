@@ -33,7 +33,7 @@
 
 ```bash
 # 1. 克隆仓库
-git clone https://github.com/<your-username>/werewolf-engine.git
+git clone https://github.com/VegeFin/werewolf-engine.git
 cd werewolf-engine
 
 # 2. 安装依赖（插件运行时依赖 @deepseek-ai/dsh-tools）
