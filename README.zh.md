@@ -1,6 +1,6 @@
 [English](README.md) | 简体中文
 
-# Evolving-Werewolf — 进化型狼人杀
+# Evolving-Werewolf — 自进化狼人杀
 
 > **AI 玩家会越打越强。**
 
