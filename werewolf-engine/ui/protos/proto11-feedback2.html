@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>狼人杀 UI 原型 11 · 反馈修订2</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --wolf: #e05252;
+    --good: #4f8ef7;
+    --villa: #f0b429;
+    --you: #3ddc97;
+    --line: #2a2f3d;
+    --bg: #101218;
+    --panel: #1a1d26;
+    --card: #20242f;
+    --text: #e6e8ef;
+    --dim: #8b93a7;
+    --sky-top: #0d1420;
+    --sky-bottom: #1a2434;
+  }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; gap: 14px; transition: background .8s ease; }
+  body.day { background: #eef1f5; color: #232830; --line:#d5dae3; --panel:#ffffff; --card:#f6f8fa; --dim:#7a8291; --sky-top:#bfd7f0; --sky-bottom:#e8f0f9; }
+  body.day .phase-title { background: linear-gradient(180deg,#fdf6e0,#f9edc8) !important; border-color:#e8d48a !important; }
+  body.day .stage, body.day .bubble { background:#fbfcfd !important; }
+  body.day .rc { background:#f0f2f6 !important; }
+
+  .day-toggle { position: fixed; top: 14px; right: 14px; z-index: 50; display:flex; align-items:center; gap:6px; padding:6px 14px; border-radius:20px; background: var(--panel); border:1px solid var(--line); color:var(--text); cursor:pointer; font-size:12px; font-weight:700; user-select:none; }
+  .day-toggle:hover { border-color: var(--villa); }
+  .moon { width:18px; height:18px; border-radius:50%; background:linear-gradient(135deg,#8fb7ff,#4f6f9f); box-shadow:0 0 10px rgba(143,183,255,.6); display:inline-block; }
+  body.day .moon { background:radial-gradient(circle at 35% 35%, #fff7c2, #ffd75e); box-shadow:0 0 14px rgba(255,215,94,.7); }
+
+  .note { width: 1100px; max-width: 100%; font-size: 11px; color: var(--dim); background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; line-height: 1.7; }
+  .note b { color: var(--villa); }
+
+  .layout { display: flex; gap: 12px; width: 1100px; max-width: 100%; }
+
+  /* ═══ 左侧主舞台 ═══ */
+  .left { flex: 1.7; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .core { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 14px; display: flex; flex-direction: column; gap: 12px; position: relative; overflow: hidden; }
+  .sky { position: absolute; inset: 0; z-index: 0; pointer-events: none; background: radial-gradient(ellipse at 50% -20%, var(--sky-top), transparent 70%), linear-gradient(180deg, transparent, var(--sky-bottom)); transition: background .8s ease; opacity: .9; }
+  .core > * { position: relative; z-index: 1; }
+
+  /* ── 待/已发言：待发言在左，已发言在右 ── */
+  .phase-row { display: flex; align-items: stretch; gap: 10px; min-height: 156px; }
+  .col { flex: 1; border-radius: 12px; background: var(--card); border: 1px dashed var(--line); padding: 10px 10px 12px; display: flex; flex-direction: column; }
+  .col .cap { font-weight: 800; font-size: 10px; margin-bottom: 8px; letter-spacing: 1px; color: var(--dim); }
+  .col .plrow { display: flex; gap: 8px; flex: 1; align-items: flex-start; overflow: hidden; }
+  /* 待发言：从左到右显示 543（next 在最右贴阶段标题）→ row-reverse，DOM 3,4,5 */
+  .pl { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 6px 5px 4px; border-radius: 10px; background: rgba(128,128,128,.12); min-width: 54px; }
+  .pl .av { width: 38px; height: 38px; border-radius: 50%; overflow: hidden; background: rgba(128,128,128,.15); border: 2px solid rgba(128,128,128,.35); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .pl .av img { width: 100%; height: 100%; object-fit: cover; }
+  .pl .nm { font-size: 10px; font-weight: 700; color: var(--text); max-width: 52px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .pl .no { font-size: 9px; font-weight: 800; color: var(--dim); }
+  .pl.next { border: 1px solid var(--good); }
+  .pl.done { opacity: .55; }
+
+  .phase-title { flex: 1.25; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border-radius: 12px; background: linear-gradient(180deg,#232a3a,#1e2431); border: 1px solid var(--line); min-width: 150px; }
+  .phase-title .t1 { font-size: 11px; color: var(--dim); font-weight: 700; letter-spacing: 2px; }
+  .phase-title .t2 { font-size: 18px; font-weight: 900; color: var(--villa); }
+  .phase-title .t3 { font-size: 10px; color: var(--dim); }
+
+  /* ── 紧凑身份条 ── */
+  .me-strip { display: flex; align-items: center; gap: 10px; border-radius: 12px; padding: 7px 12px; background: var(--card); border: 1px solid var(--line); }
+  .me-strip .av { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; background: rgba(128,128,128,.15); border: 2px solid rgba(128,128,128,.35); flex: none; display:flex; align-items:center; justify-content:center; font-size:18px; }
+  .me-strip .av img { width:100%; height:100%; object-fit:cover; }
+  .me-strip .who { font-size: 12px; font-weight: 800; }
+  .me-strip .who .role { color: var(--you); }
+  .me-strip .chips { display: flex; gap: 6px; margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
+  .chip { font-size: 10px; padding: 3px 9px; border-radius: 12px; background: rgba(128,128,128,.14); white-space: nowrap; }
+  .chip.gold { background: rgba(240,180,41,.16); color: var(--villa); }
+  .chip.red { background: rgba(224,82,82,.16); color: #ff8a8a; }
+  .chip.blue { background: rgba(79,142,247,.16); color: #8fb7ff; }
+
+  /* ── 发言舞台 ── */
+  .stage { flex: 1; border-radius: 14px; background: rgba(20,23,31,.85); border: 1px solid var(--line); padding: 14px; display: flex; gap: 14px; align-items: flex-start; min-height: 92px; cursor: pointer; transition: .8s; }
+  .stage.live { border-color: var(--good); box-shadow: 0 0 18px rgba(79,142,247,.15) inset; }
+  .stage .avatar { flex: none; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .stage .avatar .face { width: 62px; height: 62px; border-radius: 50%; overflow: hidden; border: 2px solid rgba(128,128,128,.35); background: rgba(128,128,128,.15); display:flex; align-items:center; justify-content:center; font-size:30px; }
+  .stage .avatar .face img { width: 100%; height: 100%; object-fit: cover; }
+  .stage .avatar .no { font-size: 11px; font-weight: 900; background: rgba(79,142,247,.18); padding: 2px 10px; border-radius: 12px; color: var(--good); }
+  .stage .bubble { flex: 1; border-radius: 12px; background: var(--card); border: 1px solid var(--line); padding: 12px 14px; font-size: 13px; line-height: 1.7; position: relative; }
+  .stage .bubble::before { content:""; position:absolute; left:-7px; top:24px; border:7px solid transparent; border-right-color: var(--card); }
+  .stage .bubble .hint { position:absolute; right:12px; bottom:8px; font-size:10px; color: var(--dim); opacity:.7; }
+  .stage .bubble .dots { display: inline-flex; gap: 3px; vertical-align: middle; }
+  .stage .bubble .dots i { width: 5px; height: 5px; border-radius: 50%; background: var(--good); animation: bl 1.2s infinite; }
+  .stage .bubble .dots i:nth-child(2){ animation-delay:.2s } .stage .bubble .dots i:nth-child(3){ animation-delay:.4s }
+  @keyframes bl { 0%,100%{opacity:.2} 50%{opacity:1} }
+
+  /* ── 座位行 ── */
+  .seats { display: grid; grid-template-columns: repeat(9, 1fr); gap: 6px; }
+  .seat { border-radius: 12px; padding: 6px 4px 5px; background: var(--card); border: 2px solid var(--line); display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .seat .av { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; background: rgba(128,128,128,.15); border: 2px solid rgba(128,128,128,.35); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+  .seat .av img { width: 100%; height: 100%; object-fit: cover; }
+  .seat .n { font-size: 9px; font-weight: 800; color: var(--dim); }
+  .seat .st { font-size: 8px; padding: 1px 6px; border-radius: 8px; background: rgba(128,128,128,.14); color: var(--dim); }
+  .seat.you { border-color: var(--you); box-shadow: 0 0 8px rgba(61,220,151,.25); }
+  .seat.dead { opacity: .5; }
+  .seat.dead .av { filter: grayscale(1); }
+  .seat.dead .st { background: rgba(90,95,106,.3); }
+  .seat.done .st { background: rgba(240,180,41,.18); color: var(--villa); }
+  .seat.turn { box-shadow: 0 0 10px rgba(79,142,247,.2); }
+
+  .ops { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 8px 10px; display: flex; gap: 8px; align-items: center; }
+  .ops input { flex: 1; background: var(--card); border: 1px solid var(--line); border-radius: 10px; color: var(--text); padding: 9px 12px; font-size: 12px; }
+  .ops button { padding: 9px 22px; border-radius: 10px; border: none; background: linear-gradient(135deg, #b8860b, #d4af37); color: #141000; font-weight: 800; font-size: 12px; cursor: pointer; }
+  .ops .hint { font-size: 10px; color: var(--dim); }
+
+  /* ═══ 右侧纵栏 ═══ */
+  .right { flex: 1; display: flex; flex-direction: column; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; min-width: 0; }
+  .tabs { display: flex; border-bottom: 1px solid var(--line); }
+  .tab { flex: 1; text-align: center; padding: 10px 4px; font-size: 11px; font-weight: 800; color: var(--dim); cursor: pointer; border-bottom: 2px solid transparent; }
+  .tab.on { color: var(--villa); border-bottom-color: var(--villa); }
+  .rcontent { flex: 1; padding: 10px; overflow: auto; display: flex; flex-direction: column; gap: 6px; }
+  .rc { border-radius: 8px; background: var(--card); padding: 8px 10px; display: flex; gap: 8px; font-size: 11px; line-height: 1.5; }
+  .rc .t { color: var(--dim); font-size: 9px; flex: none; font-family: ui-monospace, monospace; margin-top: 2px; }
+  .rc .tag { flex: none; min-width: 24px; text-align: center; font-weight: 900; font-size: 10px; padding: 1px 5px; border-radius: 5px; background: rgba(79,142,247,.2); color: var(--good); }
+  .rc.wolf .tag { background: rgba(224,82,82,.2); color: var(--wolf); }
+  .rc.new { border: 1px solid rgba(79,142,247,.4); }
+  .rsec { font-size: 10px; font-weight: 800; color: var(--villa); padding: 8px 2px 3px; border-bottom: 1px dashed var(--line); margin-top: 4px; }
+
+  @keyframes deal { 0% { transform: rotateY(180deg) scale(.6); opacity: 0; } 100% { transform: rotateY(0) scale(1); opacity: 1; } }
+  .deal { animation: deal .5s ease both; }
+</style>
+</head>
+<body class="night">
+
+<div class="day-toggle" onclick="toggleDay()"><span class="moon"></span><span id="dayLabel">切换白天</span></div>
+
+<div class="note">
+  <b>原型 11</b> — ① 待发言在<b>左</b>、已发言在<b>右</b>；发言序 1→5、当前 #3：左列待发言从左到右 <b>5 4 3</b>（next 贴阶段标题），右列已发言从左到右 <b>2 1</b>（最近发言贴标题）② 头像底色回到半透明灰（白天浅灰/黑夜深灰自适应）③ 待/已发言格子：头像→名字→#号 三行。
+</div>
+
+<div class="layout">
+  <div class="left">
+    <div class="core">
+      <div class="sky"></div>
+
+      <!-- 待发言(左) | 阶段标题 | 已发言(右) -->
+      <div class="phase-row">
+        <div class="col">
+          <div class="cap">⏳ 待发言</div>
+          <div class="plrow" id="pendingRow" style="flex-direction:row-reverse;justify-content:flex-start"></div>
+        </div>
+        <div class="phase-title">
+          <div class="t1" id="dayTag">🌙 第一夜 · 夜晚</div>
+          <div class="t2" id="phaseTag">狼人行动</div>
+          <div class="t3">杀机四伏</div>
+        </div>
+        <div class="col">
+          <div class="cap">✅ 已发言</div>
+          <div class="plrow" id="doneRow"></div>
+        </div>
+      </div>
+
+      <!-- 紧凑身份条 -->
+      <div class="me-strip">
+        <div class="av"><img src="/werewolf-assets/avatar-0.png" data-fb="🐳" onerror="fb(this)"></div>
+        <div class="who"><span class="role">🐺 狼人</span> · 座位 2 你</div>
+        <div class="chips">
+          <span class="chip gold">👑 警长</span>
+          <span class="chip red">队友 #4 #9</span>
+          <span class="chip blue">刀口 #6</span>
+        </div>
+      </div>
+
+      <!-- 发言舞台：点对话框=下一步 -->
+      <div class="stage live" id="stage" onclick="nextBubble()">
+        <div class="avatar"><div class="face"><img src="/werewolf-assets/sample-bw1.png" data-fb="🐳" onerror="fb(this)"></div><div class="no">#1</div></div>
+        <div class="bubble" id="bubble">
+          <span id="bubbleText">我跳预言家，昨晚验了 4 号是好人，要警徽带队。狼人刀口在 6 号，女巫先别交药……</span>
+          <span class="hint">点击继续 ▸</span>
+        </div>
+      </div>
+
+      <!-- 座位行 -->
+      <div class="seats" id="seats"></div>
+
+      <div class="ops">
+        <input placeholder="输入你的发言…（轮到你时启用）" disabled>
+        <button>提交</button>
+        <span class="hint">操作区 · 轮到你时启用</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="right">
+    <div class="tabs">
+      <div class="tab on">📜 发言</div>
+      <div class="tab">🗳 投票</div>
+      <div class="tab">🔒 信息</div>
+    </div>
+    <div class="rcontent">
+      <div class="rc new"><span class="t">09:02</span><span class="tag">#7</span>警上发言：我跳预言家，验了 4 号好人，要警徽带队。</div>
+      <div class="rc"><span class="t">09:00</span><span class="tag">#2</span>上警。</div>
+      <div class="rc wolf"><span class="t">08:58</span><span class="tag">#8</span>狼频道：刀 6 号？</div>
+      <div class="rsec">🔒 我的私密消息</div>
+      <div class="rc wolf"><span class="t">08:50</span><span class="tag">#2</span>狼队友已确认：#4 #9 在线。</div>
+      <div class="rsec">📰 公开事件</div>
+      <div class="rc"><span class="t">08:40</span><span class="tag">⚡</span>第一夜降临，狼人请睁眼。</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function fb(img) {
+    const emoji = img.getAttribute('data-fb') || '👤'
+    const wrap = img.parentElement
+    if (wrap) { wrap.removeChild(img); wrap.appendChild(document.createTextNode(emoji)) }
+  }
+
+  // 玩家名单：头像 + 名字 + 座位
+  const players = {
+    1: ['sample-bw1.png',  '小蓝', '🐳'],
+    2: ['avatar-0.png',    '你',   '🐳'],
+    3: ['sample-cf2.png',  '小橙', '🐠'],
+    4: ['sample-jf1.png',  '小粉', '🎐'],
+    5: ['sample-cg4.png',  '小蟹', '🦀'],
+    6: ['sample-sf4.png',  '小灰', '🐟'],
+    7: ['sample-ot7.png',  '小獭', '🦦'],
+    8: ['sample-lf7.png',  '小狮', '🦁'],
+    9: ['sample-gd11.png', '小金', '🐶'],
+  }
+  const mkPl = (seat, opts) => {
+    const [av, nm, emoji] = players[seat]
+    return '<div class="pl' + (opts.next ? ' next' : '') + (opts.done ? ' done' : '') + '">' +
+      '<div class="av"><img src="/werewolf-assets/' + av + '" data-fb="' + emoji + '" onerror="fb(this)"></div>' +
+      '<div class="nm">' + nm + '</div>' +
+      '<div class="no">#' + seat + '</div></div>'
+  }
+  // 当前 #3 发言：待发言(左)从左到右 5 4 3（DOM 反序，3 贴阶段标题）；已发言(右)从左到右 2 1
+  document.getElementById('pendingRow').innerHTML = [3, 4, 5].map((s) => mkPl(s, { next: s === 3 })).join('')
+  document.getElementById('doneRow').innerHTML = [2, 1].map((s) => mkPl(s, { done: true })).join('')
+
+  // 座位
+  const roster = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+  const states = { 2: 'you', 5: 'done', 8: 'turn' }
+  const stText = { you: '你', dead: '出局', done: '已投', turn: '行动中' }
+  const seatsEl = document.getElementById('seats')
+  roster.forEach((seat, i) => {
+    const st = states[seat] || ''
+    const [av, nm, emoji] = players[seat]
+    const el = document.createElement('div')
+    el.className = 'seat ' + (st || '') + (i === 0 ? ' deal' : '')
+    el.style.animationDelay = (i * 0.06) + 's'
+    el.innerHTML = '<div class="av"><img src="/werewolf-assets/' + av + '" data-fb="' + emoji + '" onerror="fb(this)"></div>' +
+      '<div class="n">' + nm + ' #' + seat + '</div>' +
+      '<div class="st">' + (stText[st] || '存活') + '</div>'
+    seatsEl.appendChild(el)
+  })
+
+  const speeches = [
+    '我跳预言家，昨晚验了 4 号是好人，要警徽带队。狼人刀口在 6 号，女巫先别交药……',
+    '3 号发言：我平民，听 1 号不像预言家，先观察一轮。',
+    '6 号发言：我同意出 8，他第一天上警就退水，行为可疑。',
+    '8 号发言：都怀疑我？那我来归票，今天出 4。',
+  ]
+  let si = 0
+  function nextBubble() {
+    si = (si + 1) % speeches.length
+    document.getElementById('bubbleText').textContent = speeches[si]
+  }
+
+  function toggleDay() {
+    const b = document.body
+    const isNight = !b.classList.contains('day')
+    b.classList.toggle('day', isNight)
+    document.getElementById('dayLabel').textContent = isNight ? '切换夜晚' : '切换白天'
+    document.getElementById('dayTag').textContent = isNight ? '☀️ 白天 · 第1天' : '🌙 第一夜 · 夜晚'
+    document.getElementById('phaseTag').textContent = isNight ? '自由发言' : '狼人行动'
+  }
+</script>
+</body>
+</html>

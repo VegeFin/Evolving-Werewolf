@@ -1,0 +1,9 @@
+{
+  "apiKey": "00288a0e0f3f4690824cdfbe040b1967.Gg4HaLQT5OSGdnpc",
+  "baseURL": "https://open.bigmodel.cn/api/paas/v4",
+  "visionModel": "glm-4v-flash",
+  "drawModel": "cogview-3-flash",
+  "drawSize": "1024x1024",
+  "assetDir": "D:/agentWorkSpace/werewolf-ui/assets",
+  "_说明": "在 https://open.bigmodel.cn 注册获取 API Key 后填入 apiKey 字段。读图用 visionModel（glm-4v-flash 免费），生图用 drawModel（cogview-3-flash 免费）。改配置无需重启，工具调用时即时生效。"
+}

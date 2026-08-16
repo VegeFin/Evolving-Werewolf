@@ -1,0 +1,12 @@
+# werewolf-engine bundle patch：在 web profile 的插件行中插入本引擎。
+# 由 `dsh plugin --profile web add ./werewolf-engine` 安装后自动并入 bundles 层。
+#
+# 当前为生产模式：固化版 = 最新动态版 v33（lib/index.js），纯 host 可跑——
+#   · 工具 werewolf_* 全局可用（引擎 + 知识库 + 素材管线）
+#   · 人类席位面板走 webServer HTTP 路由：/werewolf/panel + /werewolf/api/state|act|abort + /werewolf-assets
+#   · 无需 client 插件（不依赖动态沙箱 harness.handle / host.call）
+# 开发迭代请用动态插件（archive/dev/*.host.js，零重启）；如需临时禁用固化引擎，
+# 在 profile 的 cordis.patch.yml 里给本行加 disabled: true。
+- insert:
+    - id: werewolf-engine
+      name: werewolf-engine

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>狼人杀 UI 原型 8 · 贴图版（读图/生图管线落地）</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #101218; font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; color: #e6e8ef; display: flex; flex-direction: column; align-items: center; padding: 20px; gap: 12px; }
+
+  /* 说明条 */
+  .note { width: 920px; max-width: 100%; font-size: 11px; color: #8b93a7; background: #161a22; border: 1px solid #2a2f3d; border-radius: 10px; padding: 10px 12px; line-height: 1.7; }
+  .note b { color: #f0b429; }
+  .note code { background: #20242f; padding: 1px 5px; border-radius: 4px; color: #9fc1ff; }
+
+  .layout { display: flex; gap: 12px; width: 920px; max-width: 100%; }
+
+  /* ═══ 左侧大方格 ═══ */
+  .left { flex: 1.6; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .core { flex: 1; background: #1a1d26; border: 1px solid #2a2f3d; border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 12px; position: relative; overflow: hidden; }
+  /* 背景贴图：bg-panel.png，无图时纯色 */
+  .core.has-bg::after { content: ""; position: absolute; inset: 0; background: url("/werewolf-assets/bg-panel.png") center/cover no-repeat; opacity: 0.16; pointer-events: none; }
+  .core > * { position: relative; z-index: 1; }
+
+  .phase-row { display: flex; align-items: stretch; gap: 10px; min-height: 84px; }
+  .col { flex: 1; border-radius: 10px; background: #20242f; border: 1px dashed #333b4e; padding: 8px; font-size: 10px; color: #7c8498; }
+  .col .cap { font-weight: 800; font-size: 10px; margin-bottom: 6px; letter-spacing: 1px; }
+  .col .pl { display: flex; align-items: center; gap: 6px; padding: 4px 6px; border-radius: 8px; background: #272c3a; margin-bottom: 4px; }
+  .col .pl .av { width: 22px; height: 22px; border-radius: 50%; background: #333b4e; display: flex; align-items: center; justify-content: center; font-size: 12px; overflow: hidden; }
+  .col .pl .av img { width: 100%; height: 100%; object-fit: cover; }
+  .col .pl .no { font-size: 10px; font-weight: 800; }
+  .col .pl.next { border: 1px solid #4f8ef7; background: rgba(79,142,247,0.12); }
+  .col .pl.done { opacity: 0.6; }
+
+  .phase-title { flex: 1.4; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border-radius: 10px; background: linear-gradient(180deg, #232a3a, #1e2431); border: 1px solid #34405a; }
+  .phase-title .t1 { font-size: 12px; color: #8b93a7; font-weight: 700; letter-spacing: 2px; }
+  .phase-title .t2 { font-size: 17px; font-weight: 900; color: #f0b429; }
+
+  .stage { flex: 1; border-radius: 12px; background: #14171f; border: 1px solid #2e3546; padding: 14px; display: flex; gap: 14px; align-items: flex-start; position: relative; }
+  .stage.live { border-color: #4f8ef7; box-shadow: 0 0 16px rgba(79,142,247,0.18) inset; }
+  .stage .avatar { flex: none; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  /* 头像贴图：avatar-<seat>.png，无图回退 emoji */
+  .stage .avatar .face { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, #2f3a52, #242c3e); border: 2px solid #4f8ef7; display: flex; align-items: center; justify-content: center; font-size: 32px; overflow: hidden; }
+  .stage .avatar .face img { width: 100%; height: 100%; object-fit: cover; }
+  .stage .avatar .no { font-size: 11px; font-weight: 900; background: rgba(79,142,247,0.2); padding: 2px 10px; border-radius: 12px; color: #4f8ef7; }
+  .stage .bubble { flex: 1; min-height: 76px; border-radius: 12px; background: #1f2532; border: 1px solid #2e3546; padding: 10px 12px; font-size: 13px; line-height: 1.7; color: #dde1ea; position: relative; }
+  .stage .bubble::before { content: ""; position: absolute; left: -7px; top: 24px; border: 7px solid transparent; border-right-color: #1f2532; }
+  .stage .bubble .status { color: #5c6472; font-size: 12px; display: flex; align-items: center; gap: 8px; }
+  .stage .bubble .status .dots { display: inline-flex; gap: 3px; }
+  .stage .bubble .status .dots i { width: 5px; height: 5px; border-radius: 50%; background: #4f8ef7; animation: bl 1.2s infinite; }
+  .stage .bubble .status .dots i:nth-child(2) { animation-delay: .2s; }
+  .stage .bubble .status .dots i:nth-child(3) { animation-delay: .4s; }
+  @keyframes bl { 0%,100% { opacity: .2; } 50% { opacity: 1; } }
+  .stage .confirm { position: absolute; right: 12px; bottom: 10px; font-size: 11px; color: #4f8ef7; cursor: pointer; padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(79,142,247,0.4); background: rgba(79,142,247,0.1); }
+  .stage .confirm:hover { background: rgba(79,142,247,0.22); }
+
+  .ops { background: #1a1d26; border: 1px solid #2a2f3d; border-radius: 12px; padding: 8px; display: flex; gap: 8px; align-items: center; }
+  .ops input { flex: 1; background: #14171f; border: 1px solid #2e3546; border-radius: 8px; color: #e6e8ef; padding: 8px 10px; font-size: 12px; }
+  .ops button { padding: 8px 18px; border-radius: 8px; border: none; background: linear-gradient(135deg, #b8860b, #d4af37); color: #141000; font-weight: 800; font-size: 12px; cursor: pointer; }
+  .ops .hint { font-size: 10px; color: #5c6472; }
+
+  /* 右侧纵栏 */
+  .right { flex: 1; display: flex; flex-direction: column; background: #1a1d26; border: 1px solid #2a2f3d; border-radius: 14px; overflow: hidden; min-width: 0; }
+  .tabs { display: flex; border-bottom: 1px solid #2e3546; }
+  .tab { flex: 1; text-align: center; padding: 9px 4px; font-size: 11px; font-weight: 800; color: #7c8498; cursor: pointer; border-bottom: 2px solid transparent; }
+  .tab.on { color: #f0b429; border-bottom-color: #f0b429; }
+  .rcontent { flex: 1; padding: 10px; overflow: auto; display: flex; flex-direction: column; gap: 6px; }
+  .rcontent .rc { border-radius: 8px; background: #20242f; padding: 8px 10px; display: flex; gap: 8px; font-size: 11px; line-height: 1.5; }
+  .rcontent .rc .t { color: #5c6472; font-size: 9px; flex: none; font-family: ui-monospace, monospace; margin-top: 2px; }
+  .rcontent .rc .tag { flex: none; min-width: 24px; text-align: center; font-weight: 900; font-size: 10px; padding: 1px 5px; border-radius: 5px; background: rgba(79,142,247,0.2); color: #4f8ef7; }
+  .rcontent .rc.wolf .tag { background: rgba(224,82,82,0.2); color: #e05252; }
+  .rcontent .rc.new { border: 1px solid rgba(79,142,247,0.4); }
+
+  /* ═══ 身份卡（角色贴图：role-<role>.png）═══ */
+  .role-card { display: flex; align-items: center; gap: 12px; border-radius: 12px; background: linear-gradient(135deg, #232a3a, #1e2431); border: 1px solid #34405a; padding: 10px 14px; margin-bottom: 10px; }
+  .role-card .rc-img { width: 56px; height: 56px; border-radius: 10px; overflow: hidden; background: #20242f; border: 1px solid #2e3546; flex: none; display: flex; align-items: center; justify-content: center; font-size: 28px; }
+  .role-card .rc-img img { width: 100%; height: 100%; object-fit: cover; }
+  .role-card .rc-meta .role { font-size: 16px; font-weight: 900; color: #f0b429; }
+  .role-card .rc-meta .seat { font-size: 11px; color: #8b93a7; margin-top: 2px; }
+  .role-card .chips { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; max-width: 60%; }
+  .chip { font-size: 10px; padding: 3px 8px; border-radius: 10px; background: rgba(128,128,128,0.15); white-space: nowrap; }
+  .chip.gold { background: rgba(212,175,55,0.18); color: #f0b429; }
+  .chip.red { background: rgba(224,82,82,0.18); color: #ff8a8a; }
+</style>
+</head>
+<body>
+
+<div class="note">
+  <b>原型 8 · 贴图版</b> — 展示读图/生图管线产出的素材如何进入面板：<br>
+  · 头像：<code>/werewolf-assets/avatar-&lt;座位号&gt;.png</code>（如 avatar-3.png），无图自动回退 emoji<br>
+  · 身份卡：<code>/werewolf-assets/role-&lt;角色&gt;.png</code>（role-wolf / role-seer / role-witch / role-hunter / role-villager）<br>
+  · 背景：<code>/werewolf-assets/bg-panel.png</code>（可选，低透明度叠底）<br>
+  · 素材由 <code>werewolf_draw</code> 一次性生成后复用；当前无素材，下方全部走 emoji 回退（正好演示回退效果）。
+</div>
+
+<div class="layout">
+
+  <!-- 左侧大方格 -->
+  <div class="left">
+    <div class="core has-bg" id="core">
+      <!-- 顶行：待发言 | 阶段标题 | 已发言 -->
+      <div class="phase-row">
+        <div class="col">
+          <div class="cap">⏳ 待发言</div>
+          <div class="pl next"><span class="av"><img src="/werewolf-assets/avatar-8.png" data-fb="👤" onerror="fb(this)"></span><span class="no">#8</span><span style="margin-left:auto;font-size:9px;color:#4f8ef7">next</span></div>
+          <div class="pl"><span class="av"><img src="/werewolf-assets/avatar-5.png" data-fb="👤" onerror="fb(this)"></span><span class="no">#5</span></div>
+        </div>
+        <div class="phase-title">
+          <div class="t1">第一轮白天</div>
+          <div class="t2">警上发言</div>
+        </div>
+        <div class="col">
+          <div class="cap">✅ 已发言</div>
+          <div class="pl done"><span class="av"><img src="/werewolf-assets/avatar-7.png" data-fb="👤" onerror="fb(this)"></span><span class="no">#7</span></div>
+        </div>
+      </div>
+
+      <!-- 我的身份卡（角色贴图） -->
+      <div class="role-card">
+        <div class="rc-img"><img src="/werewolf-assets/role-wolf.png" data-fb="🐺" onerror="fb(this)"></div>
+        <div class="rc-meta"><div class="role">狼人</div><div class="seat">座位 2 · 你</div></div>
+        <div class="chips"><span class="chip gold">👑 警长</span><span class="chip red">队友: #4 #9</span></div>
+      </div>
+
+      <!-- 正在发言舞台 -->
+      <div class="stage live">
+        <div class="avatar"><div class="face"><img src="/werewolf-assets/avatar-2.png" data-fb="🐺" onerror="fb(this)"></div><div class="no">#2</div></div>
+        <div class="bubble">
+          <span>我跳预言家，昨晚验了 4 号是好人，要警徽带队。狼人昨晚刀口在 6 号，我建议女巫先别交药，等晚上看情况。</span>
+          <span class="confirm">✔ 确认，下一位 →</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 操作区 -->
+    <div class="ops">
+      <input placeholder="输入你的发言…（轮到你时启用）" disabled>
+      <button disabled>提交</button>
+      <span class="hint">操作区 · 轮到你时启用</span>
+    </div>
+  </div>
+
+  <!-- 右侧纵栏 -->
+  <div class="right">
+    <div class="tabs">
+      <div class="tab on">📜 过往发言</div>
+      <div class="tab">🗳 投票纪录</div>
+      <div class="tab">🔒 信息</div>
+    </div>
+    <div class="rcontent">
+      <div class="rc new"><span class="t">09:02</span><span class="tag">#7</span>警上发言：我跳预言家，昨晚验了 4 号是好人，要警徽带队。</div>
+      <div class="rc"><span class="t">09:00</span><span class="tag">#2</span>上警。</div>
+      <div class="rc wolf"><span class="t">08:58</span><span class="tag">#8</span>狼频道：刀 6 号？</div>
+      <div class="rc"><span class="t">08:55</span><span class="tag">#5</span>在线确认。</div>
+      <div class="rc"><span class="t">08:40</span><span class="tag">#3</span>在线确认。</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 图片加载失败 → 回退到 data-fb 的 emoji（素材不存在时面板照常可用）
+  function fb(img) {
+    const emoji = img.getAttribute('data-fb') || '👤'
+    const wrap = img.parentElement
+    wrap.removeChild(img)
+    wrap.appendChild(document.createTextNode(emoji))
+  }
+  // 背景贴图存在才显示（用 Image 预探测）
+  const probe = new Image()
+  probe.onload = () => document.getElementById('core').classList.add('has-bg')
+  probe.onerror = () => {}
+  probe.src = '/werewolf-assets/bg-panel.png'
+</script>
+</body>
+</html>
